@@ -1,12 +1,9 @@
-// lib/pages/analisis_bid.dart
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Untuk komunikasi HTTP
-import 'dart:convert'; // Untuk parsing JSON
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AnalisisBidPage extends StatefulWidget {
   static const String routeName = '/analisis';
-
   const AnalisisBidPage({super.key});
 
   @override
@@ -16,7 +13,7 @@ class AnalisisBidPage extends StatefulWidget {
 class _AnalisisBidPageState extends State<AnalisisBidPage> {
   final List<String> _cards = [];
   late String _currentCard;
-
+  late String _strategy; // Menyimpan strategi yang dipilih
   final List<String> _ranks = [
     '2',
     '3',
@@ -46,7 +43,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
           _currentCard = '';
           return;
         }
-
         _currentCard += value;
         if (!_cards.contains(_currentCard)) {
           _cards.add(_currentCard);
@@ -66,11 +62,11 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     });
   }
 
-  Future<Map<String, dynamic>> _analyzeOpening(List<String> cards) async {
-    // final url = Uri.parse('http://10.0.2.2:8000/analisis/opening'); // emulator
-    final url = Uri.parse('http://192.168.18.6:8000/analisis/opening'); // fisik
-
-    // Fungsi lokal untuk konversi satu kartu
+  Future<Map<String, dynamic>> _analyzeWithStrategy(
+    List<String> cards,
+    String strategy,
+  ) async {
+    final url = Uri.parse('http://10.0.2.2:8000/analisis'); // emulator
     String convertCardUnicodeToSHDC(String card) {
       return card
           .replaceAll('♠', 'S')
@@ -79,23 +75,19 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
           .replaceAll('♣', 'C');
     }
 
-    // Konversi semua kartu dari Unicode ke SHDC
     List<String> convertedCards = cards.map(convertCardUnicodeToSHDC).toList();
-
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'cards': convertedCards}),
+        body: jsonEncode({'cards': convertedCards, 'strategy': strategy}),
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         return {
-          'result': data['result'],
-          'hcp': data['hcp'],
-          'distribusi': data['distribusi'],
+          'result': data['result']?.toString() ?? 'Unknown',
+          'hcp': data['hcp']?.toString() ?? '0',
+          'distribusi': data['distribusi']?.toString() ?? '0000',
         };
       } else {
         throw 'Server Error: ${response.statusCode}, Response: ${response.body}';
@@ -112,15 +104,13 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
       );
       return;
     }
-
     try {
-      final result = await _analyzeOpening(_cards);
-
+      final result = await _analyzeWithStrategy(_cards, _strategy);
       setState(() {
         analysisData = {
-          'Hasil Analisis': result['result'],
+          'Hasil Analisis': result['result']!,
           'HCP': '${result['hcp']} poin',
-          'Distribusi': '${result['distribusi']}',
+          'Distribusi': result['distribusi']!,
         };
       });
     } catch (e) {
@@ -130,24 +120,25 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     }
   }
 
-  late Map<String, String> analysisData;
+  Map<String, String> analysisData = {}; // Inisialisasi awal
 
   @override
   void initState() {
     _currentCard = '';
-    analysisData = {};
     super.initState();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    _strategy = (args?['strategy'] as String?) ?? 'prec_opening';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
-
-    String selectedBid = 'Opening'; // Default jika tidak ada argumen
-
-    if (args != null && args.containsKey('jenisBid')) {
-      selectedBid = args['jenisBid'];
-    }
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    String selectedBid = (args?['jenisBid'] as String?) ?? 'Opening';
 
     return Scaffold(
       appBar: AppBar(
@@ -161,7 +152,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Jenis Bid - sekarang dinamis
             Align(
               child: Card(
                 color: Colors.white.withOpacity(0.1),
@@ -186,7 +176,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             ),
             const SizedBox(height: 24),
 
-            // Kartu yang dimasukkan
+            // Kartu Pegangan
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               decoration: BoxDecoration(
@@ -234,7 +224,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
               children: _ranks.map((rank) {
                 bool isDisabled =
                     _currentCard.isNotEmpty || _cards.length >= 13;
-
                 return ElevatedButton(
                   onPressed: isDisabled ? null : () => _addCardPart(rank),
                   style: ElevatedButton.styleFrom(
@@ -260,7 +249,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
               children: [
                 ..._suits.map((suit) {
                   bool isDisabled = _currentCard.isEmpty || _cards.length >= 13;
-
                   return ElevatedButton.icon(
                     onPressed: isDisabled ? null : () => _addCardPart(suit),
                     icon: Text(
@@ -314,7 +302,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
 
             const SizedBox(height: 24),
 
-            // Output Analisis
+            // Hasil Analisis
             const Text(
               'Hasil Analisis:',
               style: TextStyle(
@@ -380,7 +368,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                 ),
               ),
             ),
-
             const SizedBox(
               height: 64,
             ), // Tambahkan margin bawah agar bisa di-scroll
