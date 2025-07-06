@@ -72,7 +72,9 @@ class PresisiBidPage extends StatelessWidget {
           Navigator.pushNamed(
             context,
             AnalisisBidPage.routeName,
-            arguments: bidTypeKey,
+            arguments: {
+              'jenisBid': title,
+            },
           );
         },
         child: Center(

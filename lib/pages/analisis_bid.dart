@@ -104,6 +104,14 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
+
+    String selectedBid = 'Opening'; // Default jika tidak ada argumen
+
+    if (args != null && args.containsKey('jenisBid')) {
+      selectedBid = args['jenisBid'];
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Analisis Bid'),
@@ -116,18 +124,21 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Jenis Bid - di tengah
+            // Jenis Bid - sekarang dinamis
             Align(
               child: Card(
                 color: Colors.white.withOpacity(0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Text(
-                    'Opening',
-                    style: TextStyle(
+                    selectedBid,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.lightBlue,
