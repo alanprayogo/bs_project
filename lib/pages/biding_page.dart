@@ -1,5 +1,8 @@
-// lib/pages/biding_page.dart
+// biding_page.dart
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/navigation_provider.dart';
 
 class BidingPage extends StatelessWidget {
   const BidingPage({super.key});
@@ -9,7 +12,7 @@ class BidingPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 48, 16, 16), // Tambahkan top margin
+        padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
         child: Column(
           children: [
             const Align(
@@ -25,18 +28,17 @@ class BidingPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Grid dengan 4 Card
             Expanded(
               child: GridView.count(
-                crossAxisCount: 2, // 2 kolom
+                crossAxisCount: 2,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                childAspectRatio: 1.3, // Lebih tinggi sedikit
+                childAspectRatio: 1.3,
                 children: [
-                  _buildCard(context, 'Presisi', Icons.menu_book, isComingSoon: false, route: '/presisi'),
-                  _buildCard(context, 'SAYC', Icons.menu_book, isComingSoon: false, route: '/sayc'),
-                  _buildCard(context, '2/1', Icons.menu_book, isComingSoon: true, route: ''),
-                  _buildCard(context, 'ACCL', Icons.menu_book, isComingSoon: true, route: ''),
+                  _buildCard(context, 'Presisi', Icons.menu_book, isComingSoon: false, pageIndex: 4),
+                  _buildCard(context, 'SAYC', Icons.menu_book, isComingSoon: false, pageIndex: 5),
+                  _buildCard(context, '2/1', Icons.menu_book, isComingSoon: true, pageIndex: null),
+                  _buildCard(context, 'ACCL', Icons.menu_book, isComingSoon: true, pageIndex: null),
                 ],
               ),
             ),
@@ -46,14 +48,16 @@ class BidingPage extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk membuat satu card
   Widget _buildCard(
-      BuildContext context, String title, IconData icon, {required bool isComingSoon, String? route}) {
+    BuildContext context,
+    String title,
+    IconData icon, {
+    required bool isComingSoon,
+    int? pageIndex,
+  }) {
     return Card(
       color: Colors.white.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -62,8 +66,8 @@ class BidingPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Fitur ini belum tersedia (Coming Soon)')),
             );
-          } else {
-            Navigator.pushNamed(context, route!);
+          } else if (pageIndex != null) {
+            context.read<NavigationProvider>().goToPage(pageIndex);
           }
         },
         child: Padding(

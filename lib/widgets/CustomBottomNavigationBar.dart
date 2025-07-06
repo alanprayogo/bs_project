@@ -15,7 +15,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<BottomNavItem> items = [
-      BottomNavItem(icon: Icons.card_giftcard, label: 'Binding'),
+      BottomNavItem(icon: Icons.card_giftcard, label: 'Biding'),
       BottomNavItem(icon: Icons.description, label: 'Kontrak'),
       BottomNavItem(icon: Icons.book, label: 'Sistem'),
       BottomNavItem(icon: Icons.help, label: 'Tutorial'),
