@@ -66,9 +66,9 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     });
   }
 
-  // final url = Uri.parse('http://localhost:8000/analisis/opening');
   Future<Map<String, dynamic>> _analyzeOpening(List<String> cards) async {
-    final url = Uri.parse('http://10.0.2.2:8000/analisis/opening');
+    // final url = Uri.parse('http://10.0.2.2:8000/analisis/opening'); // emulator
+    final url = Uri.parse('http://192.168.18.6:8000/analisis/opening'); // fisik
 
     // Fungsi lokal untuk konversi satu kartu
     String convertCardUnicodeToSHDC(String card) {
