@@ -1,6 +1,8 @@
 // lib/pages/analisis_bid.dart
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // Untuk komunikasi HTTP
+import 'dart:convert'; // Untuk parsing JSON
 
 class AnalisisBidPage extends StatefulWidget {
   static const String routeName = '/analisis';
@@ -64,33 +66,68 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     });
   }
 
-  void _submitAnalysis() {
-    if (_cards.isEmpty) {
+  // final url = Uri.parse('http://localhost:8000/analisis/opening');
+  Future<Map<String, dynamic>> _analyzeOpening(List<String> cards) async {
+    final url = Uri.parse('http://10.0.2.2:8000/analisis/opening');
+
+    // Fungsi lokal untuk konversi satu kartu
+    String convertCardUnicodeToSHDC(String card) {
+      return card
+          .replaceAll('♠', 'S')
+          .replaceAll('♥', 'H')
+          .replaceAll('♦', 'D')
+          .replaceAll('♣', 'C');
+    }
+
+    // Konversi semua kartu dari Unicode ke SHDC
+    List<String> convertedCards = cards.map(convertCardUnicodeToSHDC).toList();
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'cards': convertedCards}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        return {
+          'result': data['result'],
+          'hcp': data['hcp'],
+          'distribusi': data['distribusi'],
+        };
+      } else {
+        throw 'Server Error: ${response.statusCode}, Response: ${response.body}';
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> _submitAnalysis() async {
+    if (_cards.length != 13) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan setidaknya satu kartu')),
+        const SnackBar(content: Text('Harus tepat 13 kartu untuk analisis')),
       );
       return;
     }
 
-    // Di sini kamu bisa kirim `_cards` ke backend/logika biding
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Memulai analisis...')));
+    try {
+      final result = await _analyzeOpening(_cards);
 
-    // Simulasi menampilkan hasil analisis
-    _showAnalysisResult();
-  }
-
-  void _showAnalysisResult() {
-    setState(() {
-      // Contoh data hasil dari backend
-      analysisData = {
-        'Jenis Bid': 'Opening',
-        'HCP': '17 poin',
-        'Panjang Suit Terpanjang': 'Spade (5 kartu)',
-        'Rekomendasi Pembukaan': 'Buka 1♣',
-      };
-    });
+      setState(() {
+        analysisData = {
+          'Hasil Analisis': result['result'],
+          'HCP': '${result['hcp']} poin',
+          'Distribusi': '${result['distribusi']}',
+        };
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Analisis gagal: $e')));
+    }
   }
 
   late Map<String, String> analysisData;
@@ -288,24 +325,29 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             ),
             const SizedBox(height: 8),
 
-            Card(
-              color: Colors.white.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: analysisData.isEmpty
-                    ? const Text(
-                        'Hasil analisis akan ditampilkan di sini.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white60),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: analysisData.entries
-                            .map(
-                              (entry) => Padding(
+            // Container untuk Card Hasil Analisis
+            Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(minHeight: 80),
+              padding: EdgeInsets.zero,
+              child: Card(
+                color: Colors.white.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SingleChildScrollView(
+                    child: analysisData.isEmpty
+                        ? const Text(
+                            'Hasil analisis akan ditampilkan di sini.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white60),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: analysisData.entries.map((entry) {
+                              return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 8.0,
                                 ),
@@ -315,7 +357,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                                       width: 140,
                                       child: Text(
                                         '${entry.key}:',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.lightBlue,
                                         ),
@@ -331,12 +373,17 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                                     ),
                                   ],
                                 ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                              );
+                            }).toList(),
+                          ),
+                  ),
+                ),
               ),
             ),
+
+            const SizedBox(
+              height: 64,
+            ), // Tambahkan margin bawah agar bisa di-scroll
             Container(height: 120, color: Colors.transparent),
           ],
         ),
