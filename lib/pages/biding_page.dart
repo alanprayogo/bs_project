@@ -2,12 +2,91 @@
 import 'package:flutter/material.dart';
 
 class BidingPage extends StatelessWidget {
-  const BidingPage({Key? key}) : super(key: key);
+  const BidingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text('Biding Page', style: TextStyle(color: Colors.white, fontSize: 20)),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 48, 16, 16), // Tambahkan top margin
+        child: Column(
+          children: [
+            const Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Pilih Sistem Biding',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Grid dengan 4 Card
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2, // 2 kolom
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.3, // Lebih tinggi sedikit
+                children: [
+                  _buildCard(context, 'Presisi', Icons.menu_book, isComingSoon: false, route: '/presisi'),
+                  _buildCard(context, 'SAYC', Icons.menu_book, isComingSoon: false, route: '/sayc'),
+                  _buildCard(context, '2/1', Icons.menu_book, isComingSoon: true, route: ''),
+                  _buildCard(context, 'ACCL', Icons.menu_book, isComingSoon: true, route: ''),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fungsi untuk membuat satu card
+  Widget _buildCard(
+      BuildContext context, String title, IconData icon, {required bool isComingSoon, String? route}) {
+    return Card(
+      color: Colors.white.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 2,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          if (isComingSoon) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Fitur ini belum tersedia (Coming Soon)')),
+            );
+          } else {
+            Navigator.pushNamed(context, route!);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.lightBlue),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

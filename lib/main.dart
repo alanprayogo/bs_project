@@ -4,6 +4,8 @@ import 'pages/biding_page.dart';
 import 'pages/kontrak_page.dart';
 import 'pages/sistem_page.dart';
 import 'pages/tutorial_page.dart';
+import 'pages/presisi_bid.dart';
+import 'pages/sayc_bid.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +18,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Bid Snapper',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData.dark().copyWith(
+        primaryColor: const Color(0xFF0E1431),
+        scaffoldBackgroundColor: const Color(0xFF293A8F),
+      ),
       home: const HomePage(),
+      routes: {
+        '/presisi': (context) => const PresisiBidPage(),
+        '/sayc': (context) => const SaycBidPage(),
+      },
     );
   }
 }
@@ -53,13 +62,13 @@ class _HomePageState extends State<HomePage> {
           'Bid Snapper',
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.bold, 
-            color: Colors.white, 
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        centerTitle: true, 
-        backgroundColor: const Color(0xFF0E1431), 
-        elevation: 0, 
+        centerTitle: true,
+        backgroundColor: const Color(0xFF0E1431),
+        elevation: 0,
       ),
       body: IndexedStack(index: _currentIndex, children: _tabs),
       bottomNavigationBar: CustomBottomNavigationBar(

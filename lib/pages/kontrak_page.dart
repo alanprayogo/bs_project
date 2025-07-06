@@ -7,7 +7,7 @@ class KontrakPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Kontrak Page', style: TextStyle(color: Colors.white, fontSize: 20)),
+      child: Text('Kontrak Page', style: TextStyle(color: Colors.black, fontSize: 20)),
     );
   }
 }
