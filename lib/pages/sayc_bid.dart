@@ -6,9 +6,6 @@ class SaycBidPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('SAYC Bid')),
-      body: const Center(child: Text('Halaman SAYC')),
-    );
+    return Scaffold(body: const Center(child: Text('Halaman SAYC')));
   }
 }

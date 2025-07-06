@@ -111,7 +111,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
         backgroundColor: const Color(0xFF0E1431),
         elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,62 +277,56 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             ),
             const SizedBox(height: 8),
 
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 80),
-              padding: EdgeInsets.zero,
-              child: Card(
-                color: Colors.white.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SingleChildScrollView(
-                    child: analysisData.isEmpty
-                        ? const Text(
-                            'Hasil analisis akan ditampilkan di sini.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white60),
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: analysisData.entries
-                                .map(
-                                  (entry) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 140,
-                                          child: Text(
-                                            '${entry.key}:',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.lightBlue,
-                                            ),
-                                          ),
+            Card(
+              color: Colors.white.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: analysisData.isEmpty
+                    ? const Text(
+                        'Hasil analisis akan ditampilkan di sini.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white60),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: analysisData.entries
+                            .map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 140,
+                                      child: Text(
+                                        '${entry.key}:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.lightBlue,
                                         ),
-                                        Expanded(
-                                          child: Text(
-                                            entry.value,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                  ),
-                ),
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
               ),
             ),
+            Container(height: 120, color: Colors.transparent),
           ],
         ),
       ),
