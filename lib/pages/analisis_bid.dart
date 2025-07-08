@@ -199,8 +199,8 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 5,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 6, // dikurangi dari 8
+                            crossAxisSpacing: 6, // dikurangi dari 8
                           ),
                       itemCount:
                           _cards.length + (_currentCard.isNotEmpty ? 1 : 0),
@@ -213,7 +213,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                                 _cards[index],
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 16,
+                                  fontSize: 14, // dikurangi dari 16
                                 ),
                               ),
                             ),
@@ -226,7 +226,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                                 _currentCard,
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 16,
+                                  fontSize: 14, // dikurangi dari 16
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -248,27 +248,39 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: _ranks
                       .where((r) => ['A', 'K', 'Q', 'J', '10'].contains(r))
-                      .toList()
-                      .reversed
+                      // .toList()
+                      // .reversed
                       .map((rank) {
                         bool isDisabled =
                             _currentCard.isNotEmpty || _cards.length >= 13;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: isDisabled
-                                ? null
-                                : () => _addCardPart(rank),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDisabled
-                                  ? Colors.grey[600]
-                                  : Colors.grey[800],
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2.0,
+                          ), // dikurangi dari 4.0
+                          child: SizedBox(
+                            width:
+                                60, // tambahkan lebar tetap untuk memperkecil tombol
+                            child: ElevatedButton(
+                              onPressed: isDisabled
+                                  ? null
+                                  : () => _addCardPart(rank),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDisabled
+                                    ? Colors.grey[600]
+                                    : Colors.grey[800],
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, // dikurangi dari 12
+                                  vertical: 10, // dikurangi dari 10
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                ), // font size lebih kecil
+                                minimumSize: Size
+                                    .zero, // untuk ukuran tombol lebih compact
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
+                              child: Text(rank),
                             ),
-                            child: Text(rank),
                           ),
                         );
                       })
@@ -282,27 +294,37 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: _ranks
                       .where((r) => ['9', '8', '7', '6', '5'].contains(r))
-                      .toList()
-                      .reversed
+                      // .toList()
+                      // .reversed
                       .map((rank) {
                         bool isDisabled =
                             _currentCard.isNotEmpty || _cards.length >= 13;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: isDisabled
-                                ? null
-                                : () => _addCardPart(rank),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDisabled
-                                  ? Colors.grey[600]
-                                  : Colors.grey[800],
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2.0,
+                          ), // dikurangi
+                          child: SizedBox(
+                            width: 60, // lebar tetap
+                            child: ElevatedButton(
+                              onPressed: isDisabled
+                                  ? null
+                                  : () => _addCardPart(rank),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDisabled
+                                    ? Colors.grey[600]
+                                    : Colors.grey[800],
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, // dikurangi
+                                  vertical: 10, // dikurangi
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                ), // font lebih kecil
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
+                              child: Text(rank),
                             ),
-                            child: Text(rank),
                           ),
                         );
                       })
@@ -316,27 +338,39 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: _ranks
                       .where((r) => ['4', '3', '2'].contains(r))
-                      .toList()
-                      .reversed
+                      // .toList()
+                      // .reversed
                       .map((rank) {
                         bool isDisabled =
                             _currentCard.isNotEmpty || _cards.length >= 13;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: isDisabled
-                                ? null
-                                : () => _addCardPart(rank),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDisabled
-                                  ? Colors.grey[600]
-                                  : Colors.grey[800],
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 2.0,
+                          ), // dikurangi dari 4.0
+                          child: SizedBox(
+                            width:
+                                60, // lebar tetap untuk ukuran tombol lebih kecil
+                            child: ElevatedButton(
+                              onPressed: isDisabled
+                                  ? null
+                                  : () => _addCardPart(rank),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDisabled
+                                    ? Colors.grey[600]
+                                    : Colors.grey[800],
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, // dikurangi dari 12
+                                  vertical: 10, // dikurangi dari 10
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                ), // font size lebih kecil
+                                minimumSize:
+                                    Size.zero, // agar tombol lebih compact
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
+                              child: Text(rank),
                             ),
-                            child: Text(rank),
                           ),
                         );
                       })
@@ -354,25 +388,33 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                 ..._suits.map((suit) {
                   bool isDisabled = _currentCard.isEmpty || _cards.length >= 13;
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: ElevatedButton.icon(
-                      onPressed: isDisabled ? null : () => _addCardPart(suit),
-                      icon: Text(
-                        suit,
-                        style: TextStyle(
-                          color: suit == '♥' || suit == '♦'
-                              ? Colors.red
-                              : Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 2.0,
+                    ), // dikurangi dari 4.0
+                    child: SizedBox(
+                      width: 60, // lebar tetap untuk ukuran tombol lebih kecil
+                      child: ElevatedButton.icon(
+                        onPressed: isDisabled ? null : () => _addCardPart(suit),
+                        icon: Text(
+                          suit,
+                          style: TextStyle(
+                            color: suit == '♥' || suit == '♦'
+                                ? Colors.grey[600]
+                                : Colors.grey[800],
+                            fontSize: 12, // font size lebih kecil
+                          ),
                         ),
-                      ),
-                      label: const Text(''),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDisabled
-                            ? Colors.grey[600]
-                            : Colors.grey[800],
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
+                        label: const Text(''),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDisabled
+                              ? Colors.grey[600]
+                              : Colors.grey[800],
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6, // dikurangi dari 12
+                            vertical: 6, // dikurangi dari 10
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                     ),
@@ -381,25 +423,33 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
 
                 // Tombol Delete
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: ElevatedButton.icon(
-                    onPressed: _cards.isNotEmpty || _currentCard.isNotEmpty
-                        ? _deleteLast
-                        : null,
-                    icon: const Icon(
-                      Icons.backspace_outlined,
-                      color: Colors.red,
-                    ),
-                    label: const Text(''),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          (_cards.isNotEmpty || _currentCard.isNotEmpty)
-                          ? Colors.red[200]
-                          : Colors.grey[600],
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 2.0,
+                  ), // dikurangi dari 4.0
+                  child: SizedBox(
+                    width: 60, // lebar tetap
+                    child: ElevatedButton.icon(
+                      onPressed: _cards.isNotEmpty || _currentCard.isNotEmpty
+                          ? _deleteLast
+                          : null,
+                      icon: const Icon(
+                        Icons.backspace_outlined,
+                        color: Colors.red,
+                        size: 16, // ukuran ikon disesuaikan
+                      ),
+                      label: const Text(''),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            (_cards.isNotEmpty || _currentCard.isNotEmpty)
+                            ? Colors.red[800]
+                            : Colors.grey[800],
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6, // dikurangi dari 12
+                          vertical: 6, // dikurangi dari 10
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
                   ),
@@ -467,12 +517,15 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             const SizedBox(height: 24),
 
             // Hasil Analisis
-            const Text(
-              'Hasil Analisis:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            Center(
+              child: Text(
+                'Hasil Analisis:',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 8),
