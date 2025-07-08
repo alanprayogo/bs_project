@@ -184,35 +184,58 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  if (_cards.isEmpty && _currentCard.isEmpty)
-                    const Text(
-                      'Gunakan tombol di bawah untuk memasukkan kartu',
-                      style: TextStyle(color: Colors.white60),
-                    ),
-                  for (var card in [
-                    ..._cards,
-                    if (_currentCard.isNotEmpty) _currentCard,
-                  ])
-                    Chip(
-                      label: Text(card),
-                      backgroundColor: Colors.blueGrey[800],
-                      deleteIcon: const Icon(Icons.close, size: 16),
-                      onDeleted: () {
-                        setState(() {
-                          if (_currentCard.isEmpty) {
-                            _cards.removeLast();
-                          } else {
-                            _currentCard = '';
-                          }
-                        });
+              child: _cards.isEmpty && _currentCard.isEmpty
+                  ? const Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Gunakan tombol di bawah untuk memasukkan kartu',
+                        style: TextStyle(color: Colors.white60),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 5,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                          ),
+                      itemCount:
+                          _cards.length + (_currentCard.isNotEmpty ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index < _cards.length) {
+                          return Card(
+                            color: Colors.blueGrey[800],
+                            child: Center(
+                              child: Text(
+                                _cards[index],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else if (_currentCard.isNotEmpty) {
+                          return Card(
+                            color: Colors.blueGrey[600],
+                            child: Center(
+                              child: Text(
+                                _currentCard,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return Container(); // fallback
                       },
                     ),
-                ],
-              ),
             ),
 
             const SizedBox(height: 24),
