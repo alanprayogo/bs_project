@@ -15,19 +15,19 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
   late String _currentCard;
   late String _strategy; // Menyimpan strategi yang dipilih
   final List<String> _ranks = [
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'J',
-    'Q',
-    'K',
     'A',
+    'K',
+    'Q',
+    'J',
+    '10',
+    '9',
+    '8',
+    '7',
+    '6',
+    '5',
+    '4',
+    '3',
+    '2',
   ];
   final List<String> _suits = ['♠', '♥', '♦', '♣'];
 
@@ -218,87 +218,227 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             const SizedBox(height: 24),
 
             // Tombol Rank
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: _ranks.map((rank) {
-                bool isDisabled =
-                    _currentCard.isNotEmpty || _cards.length >= 13;
-                return ElevatedButton(
-                  onPressed: isDisabled ? null : () => _addCardPart(rank),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDisabled
-                        ? Colors.grey[600]
-                        : Colors.grey[800],
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Text(rank),
-                );
-              }).toList(),
+            Column(
+              children: [
+                // Baris pertama: A, K, Q, J, 10
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _ranks
+                      .where((r) => ['A', 'K', 'Q', 'J', '10'].contains(r))
+                      .toList()
+                      .reversed
+                      .map((rank) {
+                        bool isDisabled =
+                            _currentCard.isNotEmpty || _cards.length >= 13;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ElevatedButton(
+                            onPressed: isDisabled
+                                ? null
+                                : () => _addCardPart(rank),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDisabled
+                                  ? Colors.grey[600]
+                                  : Colors.grey[800],
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: Text(rank),
+                          ),
+                        );
+                      })
+                      .toList(),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Baris kedua: 9, 8, 7, 6, 5
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _ranks
+                      .where((r) => ['9', '8', '7', '6', '5'].contains(r))
+                      .toList()
+                      .reversed
+                      .map((rank) {
+                        bool isDisabled =
+                            _currentCard.isNotEmpty || _cards.length >= 13;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ElevatedButton(
+                            onPressed: isDisabled
+                                ? null
+                                : () => _addCardPart(rank),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDisabled
+                                  ? Colors.grey[600]
+                                  : Colors.grey[800],
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: Text(rank),
+                          ),
+                        );
+                      })
+                      .toList(),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Baris ketiga: 4, 3, 2
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _ranks
+                      .where((r) => ['4', '3', '2'].contains(r))
+                      .toList()
+                      .reversed
+                      .map((rank) {
+                        bool isDisabled =
+                            _currentCard.isNotEmpty || _cards.length >= 13;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ElevatedButton(
+                            onPressed: isDisabled
+                                ? null
+                                : () => _addCardPart(rank),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDisabled
+                                  ? Colors.grey[600]
+                                  : Colors.grey[800],
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: Text(rank),
+                          ),
+                        );
+                      })
+                      .toList(),
+                ),
+              ],
             ),
 
             const SizedBox(height: 16),
 
             // Tombol Suit & Delete
-            Wrap(
-              spacing: 16,
-              runAlignment: WrapAlignment.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ..._suits.map((suit) {
                   bool isDisabled = _currentCard.isEmpty || _cards.length >= 13;
-                  return ElevatedButton.icon(
-                    onPressed: isDisabled ? null : () => _addCardPart(suit),
-                    icon: Text(
-                      suit,
-                      style: TextStyle(
-                        color: suit == '♥' || suit == '♦'
-                            ? Colors.red
-                            : Colors.white,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton.icon(
+                      onPressed: isDisabled ? null : () => _addCardPart(suit),
+                      icon: Text(
+                        suit,
+                        style: TextStyle(
+                          color: suit == '♥' || suit == '♦'
+                              ? Colors.red
+                              : Colors.white,
+                        ),
                       ),
-                    ),
-                    label: const Text(''),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDisabled
-                          ? Colors.grey[600]
-                          : Colors.grey[800],
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      label: const Text(''),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDisabled
+                            ? Colors.grey[600]
+                            : Colors.grey[800],
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   );
                 }).toList(),
-                IconButton(
-                  icon: const Icon(
-                    Icons.backspace_outlined,
-                    color: Colors.redAccent,
+
+                // Tombol Delete
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: ElevatedButton.icon(
+                    onPressed: _cards.isNotEmpty || _currentCard.isNotEmpty
+                        ? _deleteLast
+                        : null,
+                    icon: const Icon(
+                      Icons.backspace_outlined,
+                      color: Colors.red,
+                    ),
+                    label: const Text(''),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          (_cards.isNotEmpty || _currentCard.isNotEmpty)
+                          ? Colors.red[200]
+                          : Colors.grey[600],
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
                   ),
-                  onPressed: _deleteLast,
                 ),
               ],
             ),
 
             const SizedBox(height: 24),
 
-            // Tombol Analisis
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _cards.isEmpty ? null : _submitAnalysis,
-                icon: const Icon(Icons.search),
-                label: const Text('Analisis'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _cards.isEmpty ? Colors.grey : Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+            // Tombol Analisis dan Reset
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Tombol Reset
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton.icon(
+                    onPressed: _cards.isNotEmpty || _currentCard.isNotEmpty
+                        ? () {
+                            setState(() {
+                              _cards.clear();
+                              _currentCard = '';
+                              analysisData.clear();
+                            });
+                          }
+                        : null,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reset'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          (_cards.isNotEmpty || _currentCard.isNotEmpty)
+                          ? Colors.black
+                          : Colors.grey[600],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
                   ),
-                  textStyle: const TextStyle(fontSize: 16),
                 ),
-              ),
+
+                // Tombol Analisis
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton.icon(
+                    onPressed: _cards.isEmpty ? null : _submitAnalysis,
+                    icon: const Icon(Icons.search),
+                    label: const Text('Analisis'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _cards.isEmpty
+                          ? Colors.grey
+                          : Colors.blue,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 24),
