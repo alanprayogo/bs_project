@@ -105,6 +105,11 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
       );
       return;
     }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final result = await _analyzeWithStrategy(_cards, _strategy);
       setState(() {
@@ -118,10 +123,15 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Analisis gagal: $e')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  Map<String, String> analysisData = {}; // Inisialisasi awal
+  bool _isLoading = false;
+  Map<String, String> analysisData = {};
 
   @override
   void initState() {
@@ -496,11 +506,22 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ElevatedButton.icon(
-                    onPressed: _cards.isEmpty ? null : _submitAnalysis,
-                    icon: const Icon(Icons.search),
-                    label: const Text('Analisis'),
+                    onPressed: _isLoading || _cards.length != 13
+                        ? null
+                        : _submitAnalysis,
+                    icon: _isLoading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.search),
+                    label: Text(_isLoading ? 'Memproses...' : 'Analisis'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _cards.isEmpty
+                      backgroundColor: _isLoading || _cards.length != 13
                           ? Colors.grey
                           : Colors.blue,
                       padding: const EdgeInsets.symmetric(

@@ -49,7 +49,7 @@ class _KontrakPageState extends State<KontrakPage> {
 
         _currentCard += value;
 
-        // Jika kartu belum ada, tambahkan ke tim A dulu
+        // Jika kartu belum ada, tambahkan pegangan 1 terlebih dahulu
         if (!_cardsContains(_currentCard)) {
           if (hand1.length < 13) {
             hand1.add(_currentCard);
@@ -86,6 +86,10 @@ class _KontrakPageState extends State<KontrakPage> {
       );
       return;
     }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final url = Uri.parse('http://10.0.2.2:8000/recommend');
@@ -132,9 +136,14 @@ class _KontrakPageState extends State<KontrakPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal mendapatkan rekomendasi: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
+  bool _isLoading = false;
   Map<String, String> analysisData = {};
 
   @override
@@ -151,7 +160,7 @@ class _KontrakPageState extends State<KontrakPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Kartu Pegangan Tim A
+            // Kartu Pegangan 1
             Text(
               'Kartu Pegangan 1',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -167,7 +176,7 @@ class _KontrakPageState extends State<KontrakPage> {
                   ? const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Masukkan 13 kartu untuk pegangan 1',
+                        'Masukkan 13 kartu untuk Pegangan 1',
                         style: TextStyle(color: Colors.white60),
                       ),
                     )
@@ -199,7 +208,7 @@ class _KontrakPageState extends State<KontrakPage> {
             ),
             const SizedBox(height: 16),
 
-            // Kartu Pegangan Tim B
+            // Kartu Pegangan 2
             Text(
               'Kartu Pegangan 2',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -215,7 +224,7 @@ class _KontrakPageState extends State<KontrakPage> {
                   ? const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Masukkan 13 kartu untuk pegangan 2',
+                        'Masukkan 13 kartu untuk Pegangan 2',
                         style: TextStyle(color: Colors.white60),
                       ),
                     )
@@ -486,13 +495,25 @@ class _KontrakPageState extends State<KontrakPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ElevatedButton.icon(
-                    onPressed: (hand1.length + hand2.length) < 26
+                    onPressed:
+                        (hand1.length + hand2.length) < 26 || _isLoading
                         ? null
                         : _submitRecommendation,
-                    icon: const Icon(Icons.send),
-                    label: const Text('Kirim'),
+                    icon: _isLoading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.send),
+                    label: Text(_isLoading ? 'Memproses...' : 'Kirim'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (hand1.length + hand2.length) < 26
+                      backgroundColor:
+                          (hand1.length + hand2.length) < 26 ||
+                              _isLoading
                           ? Colors.grey
                           : Colors.green,
                       padding: const EdgeInsets.symmetric(
