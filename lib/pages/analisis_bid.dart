@@ -66,7 +66,7 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     List<String> cards,
     String strategy,
   ) async {
-    final url = Uri.parse('http://10.0.2.2:8000/analisis'); // emulator
+    final url = Uri.parse('http://192.168.18.6:8000/analisis'); // emulator
     // final url = Uri.parse('https://api2.komikgen.site/analisis'); // deploy
     String convertCardUnicodeToSHDC(String card) {
       return card
@@ -551,7 +551,6 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             ),
             const SizedBox(height: 8),
 
-            // Container untuk Card Hasil Analisis
             Container(
               width: double.infinity,
               constraints: const BoxConstraints(minHeight: 80),
@@ -609,7 +608,9 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
             const SizedBox(
               height: 64,
             ), // Tambahkan margin bawah agar bisa di-scroll
-            Container(height: 120, color: Colors.transparent),
+            const SizedBox(
+              height: 64,
+            )
           ],
         ),
       ),
