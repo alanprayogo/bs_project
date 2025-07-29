@@ -25,6 +25,8 @@ class _TutorialPageState extends State<TutorialPage> {
     'Respon 1D': 'prec_respon_1d',
   };
 
+  bool _isAnalyzing = false;
+
   Map<String, dynamic> _analysisResult = {};
 
   Future<void> _uploadImage(File imageFile) async {
@@ -105,12 +107,19 @@ class _TutorialPageState extends State<TutorialPage> {
   }
 
   Future<Map<String, String>> _runAnalysis() async {
-    final rawInput = _cardsController.text.trim();
+    if (_isAnalyzing) return {}; // Cegah eksekusi ganda
+    setState(() {
+      _isAnalyzing = true;
+    });
 
+    final rawInput = _cardsController.text.trim();
     if (rawInput.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Form kartu kosong")));
+      setState(() {
+        _isAnalyzing = false;
+      });
       return {};
     }
 
@@ -124,6 +133,9 @@ class _TutorialPageState extends State<TutorialPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Tidak ada kartu valid untuk dianalisis")),
       );
+      setState(() {
+        _isAnalyzing = false;
+      });
       return {};
     }
 
@@ -131,12 +143,13 @@ class _TutorialPageState extends State<TutorialPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Silakan pilih strategi terlebih dahulu")),
       );
+      setState(() {
+        _isAnalyzing = false;
+      });
       return {};
     }
 
     final url = Uri.parse('http://192.168.18.6:8000/analisis');
-    // final url = Uri.parse('https://api2.komikgen.site/analisis');
-
     try {
       final response = await http.post(
         url,
@@ -154,7 +167,6 @@ class _TutorialPageState extends State<TutorialPage> {
             content: Text("Analisis berhasil: ${data['message'] ?? 'OK'}"),
           ),
         );
-
         setState(() {
           _analysisResult = {
             'result': data['result'] ?? 'Unknown',
@@ -162,7 +174,6 @@ class _TutorialPageState extends State<TutorialPage> {
             'distribusi': data['distribusi'] ?? '0000',
           };
         });
-
         return {
           'result': data['result']?.toString() ?? 'Unknown',
           'hcp': data['hcp']?.toString() ?? '0',
@@ -171,7 +182,6 @@ class _TutorialPageState extends State<TutorialPage> {
       } else {
         final errorData = jsonDecode(response.body);
         String errorMessage = "Server Error";
-
         if (errorData is Map && errorData.containsKey("detail")) {
           if (errorData["detail"] is List && errorData["detail"].isNotEmpty) {
             errorMessage =
@@ -182,7 +192,6 @@ class _TutorialPageState extends State<TutorialPage> {
         } else {
           errorMessage = response.reasonPhrase ?? "Error tidak diketahui";
         }
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Analisis gagal: $errorMessage")),
         );
@@ -191,9 +200,11 @@ class _TutorialPageState extends State<TutorialPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
-      rethrow;
+    } finally {
+      setState(() {
+        _isAnalyzing = false;
+      });
     }
-
     return {};
   }
 
@@ -298,12 +309,47 @@ class _TutorialPageState extends State<TutorialPage> {
 
               SizedBox(height: 10),
 
-              // Tombol Analisis
+              // Tombol Reset dan Analisis
               if (_detectedCards.isNotEmpty)
-                ElevatedButton.icon(
-                  onPressed: _runAnalysis,
-                  icon: Icon(Icons.auto_graph),
-                  label: Text("Analisis"),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _selectedImage = null;
+                          _detectedCards.clear();
+                          _cardsController.clear();
+                          _selectedStrategy = null;
+                          _analysisResult.clear();
+                        });
+                      },
+                      icon: Icon(Icons.refresh),
+                      label: Text("Reset"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      onPressed: _isAnalyzing ? null : _runAnalysis,
+                      icon: _isAnalyzing
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Icon(Icons.auto_graph),
+                      label: Text(_isAnalyzing ? "Memproses..." : "Analisis"),
+                      // Nonaktifkan saat loading
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isAnalyzing ? Colors.grey : null,
+                      ),
+                    ),
+                  ],
                 ),
 
               // Hasil Analisis
