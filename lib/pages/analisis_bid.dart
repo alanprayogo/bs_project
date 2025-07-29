@@ -66,8 +66,8 @@ class _AnalisisBidPageState extends State<AnalisisBidPage> {
     List<String> cards,
     String strategy,
   ) async {
-    final url = Uri.parse('http://192.168.18.6:8000/analisis'); // emulator
-    // final url = Uri.parse('https://api2.komikgen.site/analisis'); // deploy
+    // final url = Uri.parse('http://192.168.18.6:8000/analisis'); // emulator
+    final url = Uri.parse('https://api2.komikgen.site/analisis'); // deploy
     String convertCardUnicodeToSHDC(String card) {
       return card
           .replaceAll('♠', 'S')

@@ -92,7 +92,8 @@ class _KontrakPageState extends State<KontrakPage> {
     });
 
     try {
-      final url = Uri.parse('http://10.0.2.2:8000/recommend');
+      // final url = Uri.parse('http://10.0.2.2:8000/recommend');
+      final url = Uri.parse('https://api2.komikgen.site/recommend');
 
       String convertCardUnicodeToSHDC(String card) {
         return card
@@ -113,20 +114,20 @@ class _KontrakPageState extends State<KontrakPage> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body)['result'];
 
         setState(() {
           analysisData = {
-            'Rekomendasi': data['final_recommendation'] ?? '-',
-            'Valid': data['valid'] == true ? 'Ya' : 'Tidak',
+            'Rekomendasi': data['predicted_contract'] ?? '-',
             'Skor Kepercayaan':
-                '${data['confidence_score']?.toStringAsFixed(1) ?? 0.0}',
-            'Alasan': (data['reasons'] as List)
-                .map((e) => e.toString())
-                .join('\n'),
-            'Saran': (data['suggestions'] as List)
-                .map((e) => e.toString())
-                .join('\n'),
+                '${(data['confidence_score'] ?? 0.0).toStringAsFixed(1)}%',
+            'Prediksi Awal': data['early_predicted_contract'] ?? '-',
+            'Skor Kepercayaan Awal':
+                '${(data['early_confidence_score'] ?? 0.0).toStringAsFixed(1)}%',
+            'HCP Pegangan 1': data['hand1_hcp']?.toString() ?? '0',
+            'HCP Pegangan 2': data['hand2_hcp']?.toString() ?? '0',
+            'Total HCP': data['total_hcp'] ?? '-',
+            'Distribusi Suit': data['suit_dist'] ?? '-',
           };
         });
       } else {
@@ -495,8 +496,7 @@ class _KontrakPageState extends State<KontrakPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ElevatedButton.icon(
-                    onPressed:
-                        (hand1.length + hand2.length) < 26 || _isLoading
+                    onPressed: (hand1.length + hand2.length) < 26 || _isLoading
                         ? null
                         : _submitRecommendation,
                     icon: _isLoading
@@ -512,8 +512,7 @@ class _KontrakPageState extends State<KontrakPage> {
                     label: Text(_isLoading ? 'Memproses...' : 'Kirim'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          (hand1.length + hand2.length) < 26 ||
-                              _isLoading
+                          (hand1.length + hand2.length) < 26 || _isLoading
                           ? Colors.grey
                           : Colors.green,
                       padding: const EdgeInsets.symmetric(
