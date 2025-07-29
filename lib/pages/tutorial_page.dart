@@ -323,7 +323,7 @@ class _TutorialPageState extends State<TutorialPage> {
                       icon: const Icon(Icons.refresh),
                       label: const Text("Reset"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Colors.black,
                       ),
                     ),
                     const SizedBox(width: 10),

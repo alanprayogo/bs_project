@@ -20,6 +20,12 @@ class _SistemPageState extends State<SistemPage> {
   TextEditingController _cardsController1 = TextEditingController();
   TextEditingController _cardsController2 = TextEditingController();
   Map<String, String> _analysisResult = {};
+  bool _isAnalyzing = false;
+
+  // Fungsi bantu: format tampilan dengan spasi
+  String _formatForDisplay(List<String> cards) {
+    return cards.join(' ');
+  }
 
   // Konversi kartu seperti 10S -> TS untuk backend
   String _convertCardToServerFormat(String card) {
@@ -32,7 +38,6 @@ class _SistemPageState extends State<SistemPage> {
   // Upload gambar ke backend
   Future<void> _uploadImage(File imageFile, int handNumber) async {
     final url = Uri.parse('http://192.168.18.6:8000/upload_hand/');
-    // final url = Uri.parse('https://api2.komikgen.site/upload_hand/');
     final request = http.MultipartRequest('POST', url);
     final multipartFile = await http.MultipartFile.fromPath(
       'file',
@@ -46,24 +51,25 @@ class _SistemPageState extends State<SistemPage> {
       if (response.statusCode == 200) {
         final respBody = await http.Response.fromStream(response);
         final responseData = json.decode(respBody.body);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Upload berhasil: ${responseData['message']}"),
           ),
         );
-
         if (responseData.containsKey('cards') &&
             responseData['cards'] is List) {
-          setState(() {
-            if (handNumber == 1) {
-              _detectedCards1 = List<String>.from(responseData['cards']);
-              _cardsController1.text = _detectedCards1.join(', ');
-            } else {
-              _detectedCards2 = List<String>.from(responseData['cards']);
-              _cardsController2.text = _detectedCards2.join(', ');
-            }
-          });
+          final cards = List<String>.from(responseData['cards']);
+          if (handNumber == 1) {
+            setState(() {
+              _detectedCards1 = cards;
+              _cardsController1.text = _formatForDisplay(cards);
+            });
+          } else {
+            setState(() {
+              _detectedCards2 = cards;
+              _cardsController2.text = _formatForDisplay(cards);
+            });
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -97,7 +103,7 @@ class _SistemPageState extends State<SistemPage> {
       _uploadImage(File(image.path), 1);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tidak ada gambar dipilih untuk hand 1")),
+        const SnackBar(content: Text("Tidak ada gambar dipilih untuk hand 1")),
       );
     }
   }
@@ -114,41 +120,56 @@ class _SistemPageState extends State<SistemPage> {
       _uploadImage(File(image.path), 2);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Tidak ada gambar dipilih untuk hand 2")),
+        const SnackBar(content: Text("Tidak ada gambar dipilih untuk hand 2")),
       );
     }
   }
 
   // Analisis kontrak dari dua tangan
   Future<void> _runAnalysis() async {
-    final rawInput1 = _cardsController1.text.trim();
-    final rawInput2 = _cardsController2.text.trim();
-
-    final hand1 = rawInput1
-        .split(',')
-        .map((card) => card.trim())
-        .where((card) => card.isNotEmpty)
-        .map(_convertCardToServerFormat)
-        .toList();
-
-    final hand2 = rawInput2
-        .split(',')
-        .map((card) => card.trim())
-        .where((card) => card.isNotEmpty)
-        .map(_convertCardToServerFormat)
-        .toList();
-
-    if (hand1.isEmpty || hand2.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Kedua tangan harus berisi 13 kartu")),
-      );
-      return;
-    }
-
-    final url = Uri.parse('http://192.168.18.6:8000/recommend');
-    // final url = Uri.parse('https://api2.komikgen.site/recommend');
+    if (_isAnalyzing) return;
+    setState(() {
+      _isAnalyzing = true;
+    });
 
     try {
+      final input1 = _cardsController1.text.trim();
+      final input2 = _cardsController2.text.trim();
+
+      if (input1.isEmpty || input2.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Kedua tangan harus berisi kartu")),
+        );
+        return;
+      }
+
+      // Normalisasi input: ganti koma dengan spasi, lalu split
+      final hand1 = input1
+          .replaceAll(',', ' ')
+          .split(' ')
+          .map((card) => card.trim())
+          .where((card) => card.isNotEmpty)
+          .map(_convertCardToServerFormat)
+          .toList();
+
+      final hand2 = input2
+          .replaceAll(',', ' ')
+          .split(' ')
+          .map((card) => card.trim())
+          .where((card) => card.isNotEmpty)
+          .map(_convertCardToServerFormat)
+          .toList();
+
+      if (hand1.isEmpty || hand2.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Tidak ada kartu valid untuk dianalisis"),
+          ),
+        );
+        return;
+      }
+
+      final url = Uri.parse('http://192.168.18.6:8000/recommend');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -160,16 +181,12 @@ class _SistemPageState extends State<SistemPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        if (data['result'] == null) {
-          throw Exception("Hasil tidak ditemukan dalam respons");
-        }
-
         final result = data['result'];
+        if (result == null) throw Exception("Hasil tidak ditemukan");
 
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Analisis berhasil!")));
+        ).showSnackBar(const SnackBar(content: Text("Analisis berhasil!")));
 
         setState(() {
           _analysisResult = {
@@ -181,8 +198,8 @@ class _SistemPageState extends State<SistemPage> {
                 '${(result['confidence_score'] ?? 0.0).toStringAsFixed(1)}%',
             'hand1_hcp': result['hand1_hcp']?.toString() ?? '-',
             'hand2_hcp': result['hand2_hcp']?.toString() ?? '-',
-            'total_hcp': result['total_hcp'] ?? '-',
-            'suit_dist': result['suit_dist'] ?? '-',
+            'total_hcp': result['total_hcp']?.toString() ?? '-',
+            'suit_dist': result['suit_dist']?.toString() ?? '-',
           };
         });
       } else {
@@ -198,7 +215,6 @@ class _SistemPageState extends State<SistemPage> {
         } else {
           errorMessage = response.reasonPhrase ?? "Error tidak diketahui";
         }
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Analisis gagal: $errorMessage")),
         );
@@ -207,6 +223,10 @@ class _SistemPageState extends State<SistemPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() {
+        _isAnalyzing = false;
+      });
     }
   }
 
@@ -223,10 +243,13 @@ class _SistemPageState extends State<SistemPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: Colors.white70)),
-        Text(
-          value,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-          textAlign: TextAlign.right,
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -244,10 +267,10 @@ class _SistemPageState extends State<SistemPage> {
               // Tombol Upload Gambar 1
               ElevatedButton.icon(
                 onPressed: _pickImage1,
-                icon: Icon(Icons.image),
-                label: Text('Pilih Gambar 1'),
+                icon: const Icon(Icons.image),
+                label: const Text('Pilih Gambar 1'),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Preview Gambar 1
               if (_selectedImage1 != null)
@@ -268,7 +291,7 @@ class _SistemPageState extends State<SistemPage> {
                     ),
                   ),
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Form Input Kartu 1
               if (_detectedCards1.isNotEmpty || _selectedImage1 != null)
@@ -281,19 +304,20 @@ class _SistemPageState extends State<SistemPage> {
                     decoration: InputDecoration(
                       labelText: "Kartu Terdeteksi - Hand 1",
                       border: OutlineInputBorder(),
-                      hintText: "Contoh: AS, KH, QD, JC",
+                      hintText: "Contoh: AS KH QD JC",
                     ),
                   ),
                 ),
-              SizedBox(height: 20),
+
+              const SizedBox(height: 30),
 
               // Tombol Upload Gambar 2
               ElevatedButton.icon(
                 onPressed: _pickImage2,
-                icon: Icon(Icons.image),
-                label: Text('Pilih Gambar 2'),
+                icon: const Icon(Icons.image),
+                label: const Text('Pilih Gambar 2'),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Preview Gambar 2
               if (_selectedImage2 != null)
@@ -314,7 +338,7 @@ class _SistemPageState extends State<SistemPage> {
                     ),
                   ),
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Form Input Kartu 2
               if (_detectedCards2.isNotEmpty || _selectedImage2 != null)
@@ -327,22 +351,59 @@ class _SistemPageState extends State<SistemPage> {
                     decoration: InputDecoration(
                       labelText: "Kartu Terdeteksi - Hand 2",
                       border: OutlineInputBorder(),
-                      hintText: "Contoh: AS, KH, QD, JC",
+                      hintText: "Contoh: AS KH QD JC",
                     ),
                   ),
                 ),
-              SizedBox(height: 20),
 
-              // Tombol Analisis
-              ElevatedButton.icon(
-                onPressed: _runAnalysis,
-                icon: Icon(Icons.auto_graph),
-                label: Text("Analisis"),
+              const SizedBox(height: 30),
+
+              // Tombol Reset dan Analisis
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _selectedImage1 = null;
+                        _selectedImage2 = null;
+                        _detectedCards1.clear();
+                        _detectedCards2.clear();
+                        _cardsController1.clear();
+                        _cardsController2.clear();
+                        _analysisResult.clear();
+                      });
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Reset"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton.icon(
+                    onPressed: _isAnalyzing ? null : _runAnalysis,
+                    icon: _isAnalyzing
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.auto_graph),
+                    label: Text(_isAnalyzing ? "Memproses..." : "Analisis"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isAnalyzing ? Colors.grey : null,
+                    ),
+                  ),
+                ],
               ),
 
               // Hasil Analisis
               if (_analysisResult.isNotEmpty) ...[
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Center(
                   child: Text(
                     'Hasil Analisis:',
@@ -353,7 +414,7 @@ class _SistemPageState extends State<SistemPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -399,7 +460,7 @@ class _SistemPageState extends State<SistemPage> {
                 ),
               ],
 
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 40),
+              const SizedBox(height: 40),
             ],
           ),
         ),
