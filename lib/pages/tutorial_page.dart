@@ -31,7 +31,8 @@ class _TutorialPageState extends State<TutorialPage> {
   }
 
   Future<void> _uploadImage(File imageFile) async {
-    final url = Uri.parse('http://192.168.18.6:8000/upload/');
+    // final url = Uri.parse('http://192.168.18.6:8000/upload/');
+    final url = Uri.parse('https://api2.komikgen.site/upload/');
     final request = http.MultipartRequest('POST', url);
     final multipartFile = await http.MultipartFile.fromPath(
       'file',
@@ -149,7 +150,8 @@ class _TutorialPageState extends State<TutorialPage> {
       return {};
     }
 
-    final url = Uri.parse('http://192.168.18.6:8000/analisis');
+    // final url = Uri.parse('http://192.168.18.6:8000/analisis');
+    final url = Uri.parse('https://api2.komikgen.site/analisis');
     try {
       final response = await http.post(
         url,

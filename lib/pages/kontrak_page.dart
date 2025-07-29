@@ -93,8 +93,8 @@ class _KontrakPageState extends State<KontrakPage> {
 
     try {
       // final url = Uri.parse('http://10.0.2.2:8000/recommend');
-      final url = Uri.parse('http://192.168.18.6:8000/recommend');
-      // final url = Uri.parse('https://api2.komikgen.site/recommend');
+      // final url = Uri.parse('http://192.168.18.6:8000/recommend');
+      final url = Uri.parse('https://api2.komikgen.site/recommend');
 
       String convertCardUnicodeToSHDC(String card) {
         return card
