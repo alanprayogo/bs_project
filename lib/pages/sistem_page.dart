@@ -13,18 +13,15 @@ class SistemPage extends StatefulWidget {
 
 class _SistemPageState extends State<SistemPage> {
   final ImagePicker _picker = ImagePicker();
-
   XFile? _selectedImage1;
   XFile? _selectedImage2;
-
   List<String> _detectedCards1 = [];
   List<String> _detectedCards2 = [];
-
   TextEditingController _cardsController1 = TextEditingController();
   TextEditingController _cardsController2 = TextEditingController();
+  Map<String, String> _analysisResult = {};
 
-  Map<String, dynamic> _analysisResult = {};
-
+  // Konversi kartu seperti 10S -> TS untuk backend
   String _convertCardToServerFormat(String card) {
     if (card.length == 3 && card.startsWith('10')) {
       return 'T${card[2]}';
@@ -32,10 +29,10 @@ class _SistemPageState extends State<SistemPage> {
     return card;
   }
 
+  // Upload gambar ke backend
   Future<void> _uploadImage(File imageFile, int handNumber) async {
-    // final url = Uri.parse('http://192.168.18.6:8000/upload_hand/');
-    final url = Uri.parse('https://api2.komikgen.site/upload_hand/');
-
+    final url = Uri.parse('http://192.168.18.6:8000/upload_hand/');
+    // final url = Uri.parse('https://api2.komikgen.site/upload_hand/');
     final request = http.MultipartRequest('POST', url);
     final multipartFile = await http.MultipartFile.fromPath(
       'file',
@@ -70,7 +67,9 @@ class _SistemPageState extends State<SistemPage> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Tidak ada data kartu untuk hand_$handNumber"),
+              content: Text(
+                "Tidak ada kartu terdeteksi untuk hand $handNumber",
+              ),
             ),
           );
         }
@@ -86,6 +85,7 @@ class _SistemPageState extends State<SistemPage> {
     }
   }
 
+  // Pilih gambar untuk hand 1
   Future<void> _pickImage1() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -102,6 +102,7 @@ class _SistemPageState extends State<SistemPage> {
     }
   }
 
+  // Pilih gambar untuk hand 2
   Future<void> _pickImage2() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -118,6 +119,7 @@ class _SistemPageState extends State<SistemPage> {
     }
   }
 
+  // Analisis kontrak dari dua tangan
   Future<void> _runAnalysis() async {
     final rawInput1 = _cardsController1.text.trim();
     final rawInput2 = _cardsController2.text.trim();
@@ -137,14 +139,14 @@ class _SistemPageState extends State<SistemPage> {
         .toList();
 
     if (hand1.isEmpty || hand2.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Kedua form harus berisi kartu")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Kedua tangan harus berisi 13 kartu")),
+      );
       return;
     }
 
-    // final url = Uri.parse('http://192.168.18.6:8000/recommend');
-    final url = Uri.parse('https://api2.komikgen.site/recommend');
+    final url = Uri.parse('http://192.168.18.6:8000/recommend');
+    // final url = Uri.parse('https://api2.komikgen.site/recommend');
 
     try {
       final response = await http.post(
@@ -158,25 +160,34 @@ class _SistemPageState extends State<SistemPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Analisis berhasil: ${data['message'] ?? 'OK'}"),
-          ),
-        );
+
+        if (data['result'] == null) {
+          throw Exception("Hasil tidak ditemukan dalam respons");
+        }
+
+        final result = data['result'];
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Analisis berhasil!")));
 
         setState(() {
           _analysisResult = {
-            'result': data['final_recommendation'] ?? 'Unknown',
-            'valid': data['valid'] == true ? 'Ya' : 'Tidak',
-            'confidence': '${(data['confidence_score'] ?? 0.0)}',
-            'reasons': (data['reasons'] ?? []).join('\n'),
-            'suggestions': (data['suggestions'] ?? []).join('\n'),
+            'early_contract': result['early_predicted_contract'] ?? '-',
+            'early_confidence':
+                '${(result['early_confidence_score'] ?? 0.0).toStringAsFixed(1)}%',
+            'final_contract': result['predicted_contract'] ?? '-',
+            'final_confidence':
+                '${(result['confidence_score'] ?? 0.0).toStringAsFixed(1)}%',
+            'hand1_hcp': result['hand1_hcp']?.toString() ?? '-',
+            'hand2_hcp': result['hand2_hcp']?.toString() ?? '-',
+            'total_hcp': result['total_hcp'] ?? '-',
+            'suit_dist': result['suit_dist'] ?? '-',
           };
         });
       } else {
         final errorData = jsonDecode(response.body);
         String errorMessage = "Server Error";
-
         if (errorData is Map && errorData.containsKey("detail")) {
           if (errorData["detail"] is List && errorData["detail"].isNotEmpty) {
             errorMessage =
@@ -196,7 +207,6 @@ class _SistemPageState extends State<SistemPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
-      rethrow;
     }
   }
 
@@ -207,10 +217,24 @@ class _SistemPageState extends State<SistemPage> {
     super.dispose();
   }
 
+  // Helper untuk membuat baris hasil
+  Widget _buildResultRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.white70)),
+        Text(
+          value,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          textAlign: TextAlign.right,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: Text("Sistem Page")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -244,7 +268,6 @@ class _SistemPageState extends State<SistemPage> {
                     ),
                   ),
                 ),
-
               SizedBox(height: 20),
 
               // Form Input Kartu 1
@@ -258,11 +281,10 @@ class _SistemPageState extends State<SistemPage> {
                     decoration: InputDecoration(
                       labelText: "Kartu Terdeteksi - Hand 1",
                       border: OutlineInputBorder(),
-                      hintText: "Contoh: Ace of Spades, King of Hearts",
+                      hintText: "Contoh: AS, KH, QD, JC",
                     ),
                   ),
                 ),
-
               SizedBox(height: 20),
 
               // Tombol Upload Gambar 2
@@ -292,7 +314,6 @@ class _SistemPageState extends State<SistemPage> {
                     ),
                   ),
                 ),
-
               SizedBox(height: 20),
 
               // Form Input Kartu 2
@@ -306,11 +327,10 @@ class _SistemPageState extends State<SistemPage> {
                     decoration: InputDecoration(
                       labelText: "Kartu Terdeteksi - Hand 2",
                       border: OutlineInputBorder(),
-                      hintText: "Contoh: Ace of Spades, King of Hearts",
+                      hintText: "Contoh: AS, KH, QD, JC",
                     ),
                   ),
                 ),
-
               SizedBox(height: 20),
 
               // Tombol Analisis
@@ -344,73 +364,34 @@ class _SistemPageState extends State<SistemPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Rekomendasi",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              _analysisResult['result'] ?? '-',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        _buildResultRow(
+                          "Kontrak Awal",
+                          "${_analysisResult['early_contract']} (${_analysisResult['early_confidence']})",
                         ),
                         Divider(color: Colors.white30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Valid",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              _analysisResult['valid'] ?? '-',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
+                        _buildResultRow(
+                          "Kontrak Akhir",
+                          "${_analysisResult['final_contract']} (${_analysisResult['final_confidence']})",
                         ),
                         Divider(color: Colors.white30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Skor Kepercayaan",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              _analysisResult['confidence'] ?? '-',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
+                        _buildResultRow(
+                          "HCP Tangan 1",
+                          "${_analysisResult['hand1_hcp']}",
                         ),
                         Divider(color: Colors.white30),
-                        Text(
-                          "Alasan:",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70,
-                          ),
+                        _buildResultRow(
+                          "HCP Tangan 2",
+                          "${_analysisResult['hand2_hcp']}",
                         ),
-                        Text(
-                          _analysisResult['reasons'] ?? '-',
-                          style: TextStyle(color: Colors.white),
+                        Divider(color: Colors.white30),
+                        _buildResultRow(
+                          "Total HCP",
+                          "${_analysisResult['total_hcp']}",
                         ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Saran:",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Text(
-                          _analysisResult['suggestions'] ?? '-',
-                          style: TextStyle(color: Colors.white),
+                        Divider(color: Colors.white30),
+                        _buildResultRow(
+                          "Distribusi Suit",
+                          "${_analysisResult['suit_dist']}",
                         ),
                       ],
                     ),
