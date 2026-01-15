@@ -38,7 +38,7 @@ class _SistemPageState extends State<SistemPage> {
   // Upload gambar ke backend
   Future<void> _uploadImage(File imageFile, int handNumber) async {
     // final url = Uri.parse('http://192.168.18.6:8000/upload_hand/');
-    final url = Uri.parse('https://api2.komikgen.site/upload_hand/');
+    final url = Uri.parse('https://vps.ncnd.store/bca/api/upload_hand/');
     final request = http.MultipartRequest('POST', url);
     final multipartFile = await http.MultipartFile.fromPath(
       'file',
@@ -171,7 +171,7 @@ class _SistemPageState extends State<SistemPage> {
       }
 
       // final url = Uri.parse('http://192.168.18.6:8000/recommend');
-      final url = Uri.parse('https://api2.komikgen.site/recommend');
+      final url = Uri.parse('https://vps.ncnd.store/bca/api/recommend');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
